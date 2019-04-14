@@ -1,0 +1,113 @@
+﻿@model NMBP_TextSearch.ViewModels.SearchFormViewModel
+@{
+    ViewBag.Title = "Search movies";
+}
+
+@Styles.Render("~/Content/css")
+
+<h2>Search movies</h2>
+<hr />
+@using (Html.BeginForm("Search", "Search"))
+{
+    <div class="form-horizontal">
+
+        <div class="form-group">
+            <button type="submit" class="btn btn-primary">Search</button>
+            <div class="col-md-10">
+                @Html.TextBoxFor(m => m.SearchPattern, new { @class = "form-control searchpattern", @id = "searchpattern", @style = "width: 100%; max-width: 100%;" }) 
+                @Html.ValidationMessageFor(m => m.SearchPattern, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="col-md-10">
+                <label class="radio-inline">
+                    @Html.RadioButtonFor(model => model.LogicalOperator, 0) AND
+                </label>
+                <label class="radio-inline">
+                    @Html.RadioButtonFor(model => model.LogicalOperator, 1) OR
+                </label>
+                @Html.ValidationMessageFor(model => model.LogicalOperator, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        @if (string.IsNullOrEmpty(Model.QueryString) == false)
+        {
+            <div class="form-group">
+                <div class="col-md-10">
+                    @Html.LabelFor(m => m.QueryString)
+                    @Html.TextAreaFor(m => m.QueryString, new { @class = "form-control", @style = "width: 100%; max-width: 100%; height:200px", @readonly = true })
+                </div>
+            </div>
+        }
+
+        @if (Model.Movies != null && Model.Movies.Count() > 0)
+        {
+            <div class="form-group">
+                <div class="col-md-10">
+                    @Html.LabelFor(m => m.Movies) (@Model.Movies.Count())
+                </div>
+                <div class="container">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Rank</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var m in Model.Movies)
+                            {
+                                <tr>
+                                    <td>@Html.Raw(m.Title)</td>
+                                    <td>@m.Rank</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+        else if (string.IsNullOrEmpty(Model.QueryString) == false)
+        {
+            <div class="form-group">
+                <div class="col-md-10">
+                    @Html.LabelFor(m => m.Movies) (@Model.Movies.Count())
+                </div>
+            </div>
+        }
+     </div>
+
+    @Html.AntiForgeryToken()
+}
+@Scripts.Render("~/bundles/moment")
+@Scripts.Render("~/bundles/bootstrap")
+@Scripts.Render("~/bundles/jqueryval")
+@Scripts.Render("~/bundles/jquery")
+@Scripts.Render("~/bundles/toastr")
+
+@section Scripts 
+{  
+    <script>
+        $(document).ready(function () {
+            $("#searchpattern").autocomplete({
+                source: function (request, response) {
+                    $.ajax({
+                        url: '/Search/Autocomplete/',
+                        data: "{ 'prefix': '" + request.term + "'}",
+                        dataType: "json",
+                        type: "POST",
+                        contentType: "application/json; charset=utf-8",
+                        success: function (data) {
+                            response($.map(data, function (item) {
+                                return item;
+                            }));
+                        }
+                    });
+                },
+                minLength: 3
+            });
+        });
+    </script>
+    
+}

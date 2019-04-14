@@ -1,0 +1,120 @@
+﻿@model NMBP_TextSearch.ViewModels.AnalysisFormViewModel
+@{
+    ViewBag.Title = "Analysis";
+}
+
+@Styles.Render("~/Content/css")
+
+<h2>Analyze search inputs</h2>
+<hr />
+@using (Html.BeginForm("Analysis", "Analysis"))
+{
+    <div class="form-horizontal">
+
+        <div class="form-group">       
+            @Html.LabelFor(m => m.StartDate, new { @class = "col-md-1 control-label" })
+            <div class="col-md-10">
+                @Html.TextBoxFor(m => m.StartDate, "{0:dd MMM yyyy}", new { @class = "form-control datetimepicker1" })
+                @Html.ValidationMessageFor(m => m.StartDate, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">   
+            @Html.LabelFor(m => m.EndDate, new { @class = "col-md-1 control-label" })
+            <div class="col-md-10">
+                @Html.TextBoxFor(m => m.EndDate, "{0:dd MMM yyyy}", new { @class = "form-control datetimepicker2" })
+                @Html.ValidationMessageFor(m => m.EndDate, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(m => m.Granulation, new { @class = "col-md-1 control-label" })
+            <div class="col-md-10">
+                <label class="radio-inline">
+                    @Html.RadioButtonFor(model => model.Granulation, 0) Day
+                </label>
+                <label class="radio-inline">
+                    @Html.RadioButtonFor(model => model.Granulation, 1) Hour
+                </label>
+                @Html.ValidationMessageFor(model => model.Granulation, "", new { @class = "text-danger" })
+            </div>
+        </div> 
+        
+        <div class="form-group">
+            <div class="col-md-10">
+                <button type="submit" class="btn btn-primary">Analyze</button>
+            </div>
+        </div>
+
+        @if (Model.AnalysisResults.Item2.Count() > 0)
+        {
+            <div class="container">
+                <h4>Analysis results (@Model.AnalysisResults.Item2.Count())</h4>
+                <hr />
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Query</th>
+                            @foreach (var query in Model.AnalysisResults.Item1)
+                            {
+                                <th>@query</th>
+                            }
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var analysis in Model.AnalysisResults.Item2)
+                        {
+                            <tr>
+                                <td>@analysis.SearchPattern</td>
+                                @foreach (var dateTime in analysis.DatesOrHours)
+                                {
+                                    <td>@dateTime</td>
+                                }
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else if (Model.StartDate != null && Model.EndDate != null)
+        {
+            <div class="form-group">
+                <div class="col-md-10">
+                    <h4>Analysis results (@Model.AnalysisResults.Item2.Count())</h4>
+                </div>
+            </div>
+        }
+
+
+
+    </div>
+
+    
+
+
+    @Html.AntiForgeryToken()
+}
+
+@Scripts.Render("~/bundles/moment")
+@Scripts.Render("~/bundles/bootstrap")
+@Scripts.Render("~/bundles/jqueryval")
+
+@section Scripts {
+    <script>
+            $(document).ready(function () {
+                $('.datetimepicker1').datetimepicker({
+                    format: "DD MMM YYYY"
+                });
+                $('.datetimepicker2').datetimepicker({
+                    format: "DD MMM YYYY"
+                });
+                $(".datetimepicker1").on("dp.change", function (e) {
+                    $('.datetimepicker2').data("DateTimePicker").minDate(e.date);
+                });
+                $(".datetimepicker2").on("dp.change", function (e) {
+                    $('.datetimepicker1').data("DateTimePicker").maxDate(e.date);
+                });
+            });
+    </script>
+}
+
